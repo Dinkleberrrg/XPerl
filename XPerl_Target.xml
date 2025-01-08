@@ -196,6 +196,38 @@
 					</Anchor>
 				</Anchors>
 			</Frame>
+			
+			<Frame name="$parent_EliteFrame" hidden="false">
+				<Size><AbsDimension x="128" y="128"/></Size>
+				<Anchors>
+					<Anchor point="RIGHT">
+						<Offset>
+							<AbsDimension x="40" y="-5"/>
+						</Offset>
+					</Anchor>
+				</Anchors>
+				<Layers>
+					<Layer level="BORDER">
+						<Texture name="$parenttex" file="Interface\Addons\XPerl\Images\XPerl_Elite" setAllPoints="true"/>
+					</Layer>
+					<Layer level="OVERLAY">
+						<!-- Raid Target Icon -->
+						<Texture name="$parentraidIcon" file="Interface\TargetingFrame\UI-RaidTargetingIcons" hidden="true">
+							<Size>
+								<AbsDimension x="16" y="16"/>
+							</Size>
+							<Anchors>
+								<Anchor point="TOPLEFT">
+									<Offset>
+										<AbsDimension x="15" y="-25"/>
+									</Offset>
+								</Anchor>
+							</Anchors>
+							<TexCoords left="0" right="0.25" top="0" bottom="0.25" />
+						</Texture>
+					</Layer>
+				</Layers>
+			</Frame>
 
 			<!--Level Frame-->
 
@@ -312,6 +344,7 @@
 					</Layer>
 				</Layers>
 			</Frame>
+			
                         <Frame name="$parent_CPFrame">
 				<Size>
 					<AbsDimension x="26" y="22"/>
@@ -351,6 +384,7 @@
 					</Anchor>
 				</Anchors>
                         </Frame>
+						
 
                         <!-- Cast Click Overlay -->
                         <Button name="$parent_CastClickOverlay" topLevel="true">     --frameStrata="MEDIUM">

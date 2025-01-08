@@ -41,7 +41,7 @@ function XPerl_Target_OnLoad()
 
 	this.FlashFrames = {XPerl_Target_PortraitFrame, XPerl_Target_NameFrame,
 				XPerl_Target_LevelFrame, XPerl_Target_StatsFrame,
-				XPerl_Target_BossFrame, XPerl_Target_TypeFramePlayer,
+				XPerl_Target_BossFrame, XPerl_Target_EliteFrame, XPerl_Target_TypeFramePlayer,
 				XPerl_Target_CreatureType }
 end
 
@@ -661,39 +661,55 @@ local function XPerl_Target_UpdateClassification()
 		XPerl_Target_BossFrameText:SetText(XPERL_TYPE_CIVILIAN)
                 XPerl_Target_BossFrameText:SetTextColor(1, 0, 0)
 	        XPerl_Target_BossFrame:Show()
+			XPerl_Target_EliteFrame:Hide()
 
 	elseif (targetclassification == "normal" and UnitPlayerControlled("target")) then
 		if (not UnitIsPlayer("target")) then
 			XPerl_Target_BossFrameText:SetText(XPERL_TYPE_PET)
 	                XPerl_Target_BossFrameText:SetTextColor(1, 1, 1)
 		        XPerl_Target_BossFrame:Show()
+				XPerl_Target_EliteFrame:Hide()
 		else
 	        	XPerl_Target_BossFrame:Hide()
+				XPerl_Target_EliteFrame:Hide()
 		end
 
 	elseif ((XPerlConfig.ShowTargetLevel==1 and XPerlConfig.ShowTargetElite==1) or targetclassification=="Rare+" or targetclassification=="Rare") then
 		XPerl_Target_BossFrame:Show()
+		-- XPerl_Target_EliteFrame:SetFrameLevel(XPerl_Target_PortraitFrame:GetFrameLevel() + 0)
+		XPerl_Target_EliteFrame:SetFrameLevel(0)
+		XPerl_Target_EliteFrame:Show()
 		if (targetclassification == "worldboss") then
 			XPerl_Target_BossFrameText:SetText(XPERL_TYPE_BOSS)
-	                XPerl_Target_BossFrameText:SetTextColor(1, 0.5, 0.5)
+			XPerl_Target_BossFrameText:SetTextColor(1, 0.5, 0.5)
+			XPerl_Target_EliteFrametex:SetTexture("Interface\\Addons\\XPerl\\Images\\XPerl_Elite")
+			XPerl_Target_EliteFrametex:SetVertexColor(1, 1, 0, 1)
 
 		elseif (targetclassification == "rareelite") then
 			XPerl_Target_BossFrameText:SetText(XPERL_TYPE_RAREPLUS)
-	                XPerl_Target_BossFrameText:SetTextColor(0.8, 0.8, 0.8)
+			XPerl_Target_BossFrameText:SetTextColor(0.8, 0.8, 0.8)
+			XPerl_Target_EliteFrametex:SetTexture("Interface\\Addons\\XPerl\\Images\\XPerl_Rare")
+			XPerl_Target_EliteFrametex:SetVertexColor(1, 1, 1, 1)
 
 		elseif (targetclassification == "elite") then
 			XPerl_Target_BossFrameText:SetText(XPERL_TYPE_ELITE)
-	                XPerl_Target_BossFrameText:SetTextColor(1, 1, 0.5)
+			XPerl_Target_BossFrameText:SetTextColor(1, 1, 0.5)
+			XPerl_Target_EliteFrametex:SetTexture("Interface\\Addons\\XPerl\\Images\\XPerl_Elite")
+			XPerl_Target_EliteFrametex:SetVertexColor(1, 1, 0, 1)
 
 		elseif (targetclassification == "rare") then
 			XPerl_Target_BossFrameText:SetText(XPERL_TYPE_RARE)
-	                XPerl_Target_BossFrameText:SetTextColor(0.8, 0.8, 0.8)
+			XPerl_Target_BossFrameText:SetTextColor(0.8, 0.8, 0.8)
+			XPerl_Target_EliteFrametex:SetTexture("Interface\\Addons\\XPerl\\Images\\XPerl_Rare")
+			XPerl_Target_EliteFrametex:SetVertexColor(1, 1, 1, 1)
 
 		else
 			XPerl_Target_BossFrame:Hide()
+			XPerl_Target_EliteFrame:Hide()
 		end
         else
-                XPerl_Target_BossFrame:Hide()
+			XPerl_Target_BossFrame:Hide()
+			XPerl_Target_EliteFrame:Hide()
 	end
 
 	XPerl_Target_BossFrame:SetWidth(XPerl_Target_BossFrameText:GetStringWidth() + 10)
