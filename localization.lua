@@ -2,9 +2,9 @@
 -- Localisation file
 
 XPerl_ProductName	= "|cFFD00000X-Perl|r UnitFrames"
-XPerl_Author		= "|cFFFF8080Zek|r"
+XPerl_Author		= "|cFFFF8080Redbu11|r"
 XPerl_Description       = XPerl_ProductName.." by "..XPerl_Author
-XPerl_VersionNumber     = "1.9.6"
+XPerl_VersionNumber     = "1.9.6.1"
 XPerl_Version		= XPerl_Description.." - "..XPerl_VersionNumber
 XPerl_LongDescription	= "UnitFrame replacement for new look Player, Pet, Party, Target, Target's Target, Raid"
 XPerl_ModMenuIcon	= "Interface\\Icons\\INV_Misc_Gem_Pearl_02"
