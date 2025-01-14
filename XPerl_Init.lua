@@ -468,10 +468,9 @@ function XPerl_OptionActions()
 		XPerl_Player_Pet:SetScale(XPerlConfig.Scale_PetFrame)
 	end
 	
-	XPerlConfig.Width_PetFrame = ValidScale(XPerlConfig.Width_PetFrame)
 	if (XPerl_Player_Pet) then
-		XPerl_Player_Pet_NameFrame:SetWidth(80 * (XPerlConfig.Width_PetFrame * 1))
-		XPerl_Player_Pet_StatsFrame:SetWidth(80 * (XPerlConfig.Width_PetFrame * 1))
+		XPerl_Player_Pet_NameFrame:SetWidth(80 * (XPerlConfig.Width_PetFrame / 100))
+		XPerl_Player_Pet_StatsFrame:SetWidth(80 * (XPerlConfig.Width_PetFrame / 100))
 	end
 
 	XPerlConfig.Scale_PartyFrame = ValidScale(XPerlConfig.Scale_PartyFrame)

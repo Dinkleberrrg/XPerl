@@ -128,21 +128,21 @@ function XPerl_Defaults()
 	DefaultVar("MinimapButtonPosition",	186)
 	DefaultVar("MinimapButtonShown",	1)
 	DefaultVar("PerlCombatFlash",		1)
-	DefaultVar("PerlFadeFrames",		1)
+	DefaultVar("PerlFadeFrames",		0)
 	DefaultVar("CombatHitIndicator",	1)
 	DefaultVar("HighlightDebuffs",		1)
 	DefaultVar("HighlightDebuffsBorder",	1)
 	DefaultVar("HighlightDebuffsClass",	0)		-- 1.9.4
 	DefaultVar("BuffTooltipHelper",		1)
-	DefaultVar("FadingTooltip",		1)		-- 1.8.3
+	DefaultVar("FadingTooltip",		0)		-- 1.8.3
 --	DefaultVar("HealerMode",		0)
 --	DefaultVar("HealerModeType",		1)		-- 1.8.3
 	DefaultVar("FatHealthBars",		1)
-	DefaultVar("FadingBars",		1)		-- 1.8.9
+	DefaultVar("FadingBars",		0)		-- 1.8.9
 	DefaultVar("FadingBarsTime",		0.5)		-- 1.9.1
 	DefaultVar("MaximumScale",		1.5)
 	DefaultVar("ClearBlizzardFrames",	0)		-- 1.8.3
-	DefaultVar("OptionsColour",		{r = 0.7, g = 0.2, b = 0.2})	-- 1.8.3
+	DefaultVar("OptionsColour",		{r = 0.29, g = 0.29, b = 0.29})	-- 1.8.3
 	DefaultVar("InverseBars",		0)		-- 1.8.6
 	DefaultVar("XPerlTooltipInfo",		0)		-- 1.8.6
 
@@ -168,7 +168,7 @@ function XPerl_Defaults()
 	DefaultVar("ShowPlayerPVP",		1)		-- 1.8.3
 	DefaultVar("ShowPlayerValues",		1)
 	DefaultVar("ShowPlayerPercent",		1)
-	DefaultVar("Scale_PlayerFrame",		0.8)
+	DefaultVar("Scale_PlayerFrame",		1)
 	DefaultVar("ShowPartyNumber",		1)
 	DefaultVar("EnergyTicker",		1)
 	DefaultVar("FullScreenStatus",		0)		-- 1.8.4
@@ -181,11 +181,11 @@ function XPerl_Defaults()
 	DefaultVar("ShowPlayerPetPortrait",	1)
 	DefaultVar("ShowPlayerPetPortrait3D",	1)		-- 1.8.3
 	DefaultVar("PetHappiness",		1)
-	DefaultVar("PetHappinessSad",		1)		-- Only show happiness when not happy
+	DefaultVar("PetHappinessSad",		0)		-- Only show happiness when not happy
 	DefaultVar("PetFlashWhenSad",		1)
 	DefaultVar("ShowPetLevel",		1)
 	DefaultVar("Scale_PetFrame",		0.8)
-	DefaultVar("Width_PetFrame",		10)
+	DefaultVar("Width_PetFrame",		150)
 	DefaultVar("ShowPetXP",			1)
 	DefaultVar("ShowPlayerPetName",		1)
 	DefaultVar("PlayerPetBuffSize",		20)
@@ -220,12 +220,12 @@ function XPerl_Defaults()
 	-- Target's Target
 	DefaultVar("ShowTargetTarget",		1)
 	DefaultVar("TargetTargetHistory",	0)
-	DefaultVar("ShowTargetTargetTarget",	1)
+	DefaultVar("ShowTargetTargetTarget",	0)
 	DefaultVar("TargetTargetBuffs",		1)
 	DefaultVar("TargetCastableBuffs",	0)
 	DefaultVar("TargetCurableDebuffs",	0)
 	DefaultVar("TargetTargetTargetBuffs",	1)
-	DefaultVar("Scale_TargetTargetFrame",	0.8)
+	DefaultVar("Scale_TargetTargetFrame",	0.6)
 	DefaultVar("ShowTargetTargetPercent",	1)
 	DefaultVar("ShowTargetTargetValues",	1)
 	DefaultVar("ShowTargetTargetLevel",	1)
