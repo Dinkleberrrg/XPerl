@@ -688,7 +688,7 @@ local function XPerl_Target_UpdateClassification()
 		elseif (targetclassification == "rareelite") then
 			XPerl_Target_BossFrameText:SetText(XPERL_TYPE_RAREPLUS)
 			XPerl_Target_BossFrameText:SetTextColor(0.8, 0.8, 0.8)
-			XPerl_Target_EliteFrametex:SetTexture("Interface\\Addons\\XPerl\\Images\\XPerl_Rare")
+			XPerl_Target_EliteFrametex:SetTexture("Interface\\Addons\\XPerl\\Images\\XPerl_Elite")
 			XPerl_Target_EliteFrametex:SetVertexColor(1, 1, 1, 1)
 
 		elseif (targetclassification == "elite") then
