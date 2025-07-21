@@ -139,7 +139,34 @@ local function XPerl_Player_UpdateRep()
 	local perc = (value * 100) / max
 	XPerl_Player_StatsFrame_XPBarPercent:SetText(string.format("%.1f%%", perc))
 	XPerl_Player_StatsFrame_XPBarText:SetText(name)
+	
+	-- if (name == "none watched") then
+		-- -- XPerl_Player_StatsFrame_XPBarPercent:SetText("")
+		-- -- XPerl_Player_StatsFrame_XPBarText:SetText("")
+		-- -- color = {r = 0.3, g = 0.3, b = 1}
+		-- -- XPerl_Player_StatsFrame_XPBar:SetStatusBarColor(color.r, color.g, color.b, 1)
+		-- -- XPerl_Player_StatsFrame_XPRestBar:SetStatusBarColor(color.r, color.g, color.b, 0.5)
+		-- -- XPerl_Player_StatsFrame_XPBarBG:SetVertexColor(color.r, color.g, color.b, 0.25)
+		-- --XPerl_Player_StatsFrame_XPBar:Hide()
+		-- --XPerl_Player_StatsFrame_XPBarBG:Hide()
+		-- --XPerl_Player_StatsFrame:SetHeight(40)
+	-- end
+	
+	if (name == "none watched") then
+		hideXpBar = true
+		XPerl_Player_StatsFrame_XPBar:Hide()
+		XPerl_Player_StatsFrame_XPRestBar:Hide()
+		XPerl_Player_StatsFrame:SetHeight(40)
+	elseif (XPerlConfig.ShowPlayerXPBar == 1) then
+		hideXpBar = false
+		XPerl_Player_StatsFrame_XPBar:Show()
+		XPerl_Player_StatsFrame_XPRestBar:Show()
+		XPerl_Player_StatsFrame:SetHeight(50)
+	end
+	XPerl_StatsFrameSetup(XPerl_Player_StatsFrame, {"DruidBar", "XPBar"})
 end
+
+local hideXpBar = false
 
 -- XPerl_Player_UpdateXP
 local function XPerl_Player_UpdateXP()
@@ -147,6 +174,13 @@ local function XPerl_Player_UpdateXP()
 		XPerl_Player_UpdateRep()
 		return
 	end
+	
+	if (XPerlConfig.ShowPlayerXPBar == 1) then
+		XPerl_Player_StatsFrame_XPBar:Show()
+		XPerl_Player_StatsFrame_XPRestBar:Show()
+		XPerl_Player_StatsFrame:SetHeight(50)
+	end
+	XPerl_StatsFrameSetup(XPerl_Player_StatsFrame, {"DruidBar", "XPBar"})
 
 	local playerxp = UnitXP("player")
 	local playerxpmax = UnitXPMax("player")
@@ -295,7 +329,7 @@ local function XPerl_Player_DruidBarUpdate()
 	XPerl_Player_StatsFrame_DruidBarPercent:SetText(manaPct.."%")
 	XPerl_Player_StatsFrame_DruidBarText:SetText(math.floor(DruidBarKey.keepthemana).."/"..DruidBarKey.maxmana)
 	if (UnitPowerType("player")>0) then
-		if XPerlConfig.ShowPlayerXPBar==1 then
+		if XPerlConfig.ShowPlayerXPBar==1 and (not hideXpBar) then
 			XPerl_Player_StatsFrame:SetHeight(60)
 		else
 			XPerl_Player_StatsFrame:SetHeight(50)
@@ -305,7 +339,7 @@ local function XPerl_Player_DruidBarUpdate()
 		XPerl_Player_StatsFrame_DruidBar:Show()
 		XPerl_Player_StatsFrame_DruidBar:SetHeight(10)
 	else
-		if XPerlConfig.ShowPlayerXPBar == 1 then
+		if XPerlConfig.ShowPlayerXPBar == 1 and (not hideXpBar) then
 			XPerl_Player_StatsFrame:SetHeight(50)
 		else
 			XPerl_Player_StatsFrame:SetHeight(40)
@@ -649,6 +683,7 @@ XPerl_Player_Events.PLAYER_LEAVE_COMBAT = XPerl_Player_Events.PLAYER_ENTER_COMBA
 function XPerl_Player_Events:PLAYER_REGEN_ENABLED()
 	XPerl_Player_UpdateCombat()
 	--XPerl_Player_UpdateDisplay()
+	XPerl_Player_UpdateXP()
 end
 XPerl_Player_Events.PLAYER_REGEN_DISABLED = XPerl_Player_Events.PLAYER_REGEN_ENABLED
 XPerl_Player_Events.PLAYER_UPDATE_RESTING = XPerl_Player_Events.PLAYER_REGEN_ENABLED
@@ -656,6 +691,7 @@ XPerl_Player_Events.PLAYER_UPDATE_RESTING = XPerl_Player_Events.PLAYER_REGEN_ENA
 function XPerl_Player_Events:PLAYER_AURAS_CHANGED()
 	XPerl_CheckDebuffs("player", XPerl_Player.FlashFrames)
 	XPerl_Player_TickerShowHide()
+	XPerl_Player_UpdateXP()
 
 	if (DruidBarKey) then
 		-- For DruidBar addon, we update the mana bar on shapeshift
