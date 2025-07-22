@@ -458,6 +458,7 @@ function XPerl_Player_OnUpdate()
 	if (this.PlayerFlash) then
 		XPerl_Player_CombatFlash(arg1, false)
 	end
+	XPerl_Player_UpdateXP()
 end
 
 -- XPerl_Player_UpdateDisplay
@@ -683,7 +684,6 @@ XPerl_Player_Events.PLAYER_LEAVE_COMBAT = XPerl_Player_Events.PLAYER_ENTER_COMBA
 function XPerl_Player_Events:PLAYER_REGEN_ENABLED()
 	XPerl_Player_UpdateCombat()
 	--XPerl_Player_UpdateDisplay()
-	XPerl_Player_UpdateXP()
 end
 XPerl_Player_Events.PLAYER_REGEN_DISABLED = XPerl_Player_Events.PLAYER_REGEN_ENABLED
 XPerl_Player_Events.PLAYER_UPDATE_RESTING = XPerl_Player_Events.PLAYER_REGEN_ENABLED
@@ -691,7 +691,6 @@ XPerl_Player_Events.PLAYER_UPDATE_RESTING = XPerl_Player_Events.PLAYER_REGEN_ENA
 function XPerl_Player_Events:PLAYER_AURAS_CHANGED()
 	XPerl_CheckDebuffs("player", XPerl_Player.FlashFrames)
 	XPerl_Player_TickerShowHide()
-	XPerl_Player_UpdateXP()
 
 	if (DruidBarKey) then
 		-- For DruidBar addon, we update the mana bar on shapeshift
