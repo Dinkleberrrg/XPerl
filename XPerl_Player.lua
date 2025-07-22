@@ -452,13 +452,20 @@ function PlayerStatus_OnUpdate(val, max)
 	end
 end
 
+local last = 0
+
 -- XPerl_Player_OnUpdate
 function XPerl_Player_OnUpdate()
 	CombatFeedback_OnUpdate(arg1)
 	if (this.PlayerFlash) then
 		XPerl_Player_CombatFlash(arg1, false)
 	end
-	XPerl_Player_UpdateXP()
+	
+	last = last + arg1
+	if last >= 1 then
+		last = 0
+		XPerl_Player_UpdateXP()
+	end
 end
 
 -- XPerl_Player_UpdateDisplay
