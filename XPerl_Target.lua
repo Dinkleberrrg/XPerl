@@ -18,7 +18,7 @@ function XPerl_Target_OnLoad()
 	this.perlBuffs = 0
 	this.perlDebuffs = 0
 	this.RangeUpdate = 1
-
+ 
 	XPerl_InitFadeFrame(this)
 
 	if (XPerl_Target_AssistFrame) then
@@ -640,8 +640,10 @@ local function XPerl_Target_UpdateLevel()
 		XPerl_Target_LevelFrame:Show()
 		XPerl_Target_LevelFrame:SetWidth(27)
 		if (targetlevel < 0) then
-			XPerl_Target_LevelFrameText:SetTextColor(1, 0, 0)
-			XPerl_Target_LevelFrame:Hide()
+			local color = GetDifficultyColor(targetlevel)
+			XPerl_Target_LevelFrameText:SetTextColor(0.77, 0.12, 0.23)
+			--XPerl_Target_LevelFrame:Hide()
+			XPerl_Target_LevelFrameText:SetText("??")
 		else
 			local color = GetDifficultyColor(targetlevel)
 			XPerl_Target_LevelFrameText:SetTextColor(color.r, color.g, color.b)
