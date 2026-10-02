@@ -1,9 +1,9 @@
 # XPerl
 
-Kernmodul von X-Perl UnitFrames: Spieler-, Ziel-, Gruppen- und Begleiter-Rahmen. Enthaelt die OctoWoW-Anpassungen, siehe CHANGELOG.md.
+X-Perl UnitFrames core module: player, target, party and pet frames. Contains the OctoWoW fixes, see CHANGELOG.md.
 
-Teil von X-Perl UnitFrames (Redbu11), aufgeteilt in ein Repo pro Addon-Ordner, damit der Octo-Launcher es per Git-URL installieren und aktualisieren kann.
+Part of X-Perl UnitFrames (Redbu11), split into one repository per addon folder so the Octo launcher can install and update it via git URL.
 
 - Original: https://github.com/Redbu11dev/X-Perl-UnitFrames
-- Gesamter Fork mit allen Modulen: https://github.com/Dinkleberrrg/X-Perl-UnitFrames (Branch `octowow`)
-- Installation: `https://github.com/Dinkleberrrg/XPerl` im Octo-Launcher als Custom-Git-Addon eintragen, oder den Ordner `XPerl` nach `Interface\AddOns` kopieren.
+- Full fork with all modules: https://github.com/Dinkleberrrg/X-Perl-UnitFrames (branch `octowow`)
+- Installation: add `https://github.com/Dinkleberrrg/XPerl` as a custom git addon in the Octo launcher, or copy the folder `XPerl` to `Interface\AddOns`.
