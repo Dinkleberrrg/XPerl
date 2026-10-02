@@ -185,6 +185,7 @@ local function XPerl_Player_UpdateXP()
 	local playerxp = UnitXP("player")
 	local playerxpmax = UnitXPMax("player")
 	local playerxprest = GetXPExhaustion() or 0
+	local playerxprestPercent = " (+"..string.format("%d", (playerxprest/playerxpmax) * 100).."%)"
 	XPerl_Player_StatsFrame_XPBar:SetMinMaxValues(0, playerxpmax)
 	XPerl_Player_StatsFrame_XPRestBar:SetMinMaxValues(0, playerxpmax)
 	XPerl_Player_StatsFrame_XPBar:SetValue(playerxp)
@@ -198,9 +199,9 @@ local function XPerl_Player_UpdateXP()
 
 	if (playerxprest > 0) then
 		if (playerxpmax > 10000) then
-			xptext = xptext .. string.format("(+%.0fK)", playerxprest / 1000)
+			xptext = xptext .. playerxprestPercent
 		else
-			xptext = xptext .. string.format("(+%d)", playerxprest)
+			xptext = xptext .. playerxprestPercent
 		end
 
 		color = {r = 0.3, g = 0.3, b = 1}

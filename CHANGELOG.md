@@ -7,9 +7,7 @@ This repository was split from [Dinkleberrrg/X-Perl-UnitFrames](https://github.c
 
 **Base:** Redbu11dev/X-Perl-UnitFrames `6d8a4a8` (2025-07-22)
 
-> The installed version is older than the current upstream. Two later upstream commits are missing locally. They are **not** own changes and only show up as a regression in a diff against upstream:
-> - `933e015` "added ?? level display" (target level "??" instead of hidden, XPerl_Target.lua)
-> - `11a4237` "Changed rested xp to show percentage" (rested XP as a percentage instead of absolute, XPerl_Player.lua)
+Upstream commits `933e015` ("??" level display for bosses) and `11a4237` (rested XP as a percentage) are included as of 2026-10-03.
 
 ## HoT countdown on buff icons
 
