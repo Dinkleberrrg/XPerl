@@ -2,9 +2,9 @@
 
 X-Perl UnitFrames core module: player, target, party and pet frames. Contains the OctoWoW fixes, see CHANGELOG.md.
 
-## OctoWoW changes compared to the original
+## Notable changes
 
-Original: **Redbu11dev/X-Perl-UnitFrames**. This fork (by Dinkleberrrg) changes:
+Fork of **Redbu11dev/X-Perl-UnitFrames**.
 
 - Per-character settings no longer leak into other characters (deep copies instead of shared tables).
 - Fixed Lua errors when toggling "save per character" or resetting on a fresh account.
