@@ -5,5 +5,7 @@
 ## Author: original - Zek, additional changes - Redbu11
 ## OptionalDeps: MobHealth, MobInfo2, CT_RaidAssist, DruidBar
 ## SavedVariables: XPerlConfig, XPerlConfig_Global, XPerlConfigSavePerCharacter
+# [patch] gelernte HoT-Dauern pro Charakter (XPerl_HoTTimer.lua)
+## SavedVariablesPerCharacter: XPerl_HoTDurations
 XPerl_Globals.xml
 XPerl.xml
