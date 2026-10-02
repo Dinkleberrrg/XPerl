@@ -9,6 +9,14 @@ This repository was split from [Dinkleberrrg/X-Perl-UnitFrames](https://github.c
 
 Upstream commits `933e015` ("??" level display for bosses) and `11a4237` (rested XP as a percentage) are included as of 2026-10-03.
 
+
+## Releases
+
+Version scheme: `<upstream version>-octo.<n>`. Each release is a git tag `v<version>`; older versions can be downloaded from the tag page on GitHub.
+
+### 1.9.6.1-octo.1 – 2026-10-03
+- First tagged release with the changes listed below.
+
 ## HoT countdown on buff icons
 
 - New: `XPerl/XPerl_HoTTimer.lua`. Your own HoTs (Renew, Rejuvenation, Regrowth) show their remaining time in seconds on the buff icons of the party, raid, target and target-of-target frames (yellow below 6 s, red below 3 s).
