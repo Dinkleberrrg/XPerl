@@ -38,21 +38,59 @@ function XPerl_Notice(str)
 	end
 end
 
+-- [patch] Tiefe Kopie. XPerl hat Konfigurationstabellen ueberall per Referenz
+-- weitergereicht. Dadurch teilten sich Charaktere und der kontoweite Stand
+-- dieselben Farb-, Rand- und Raidtabellen: eine Aenderung an einem Charakter
+-- schlug still auf alle anderen durch.
+function XPerl_DeepCopy(src)
+	if (type(src) ~= "table") then
+		return src
+	end
+
+	local dst = {}
+	for k, v in pairs(src) do
+		if (type(v) == "table") then
+			dst[k] = XPerl_DeepCopy(v)
+		else
+			dst[k] = v
+		end
+	end
+	return dst
+end
+
+-- [patch] Ablageort im kontoweiten Speicher, angelegt falls noetig.
+-- Der else-Zweig von XPerl_SetMyGlobal ist frueher ungeprueft in
+-- XPerlConfig_Global[realm][name] gelaufen und mit
+-- "attempt to index field '?' (a nil value)" gestorben, sobald man den
+-- Schalter "pro Charakter speichern" ausgeschaltet hat, bevor je ein
+-- Eintrag dafuer angelegt worden war.
+function XPerl_GlobalSlot()
+	if (not XPerlConfig_Global) then
+		XPerlConfig_Global = {}
+	end
+
+	local realm = GetRealmName()
+	if (not XPerlConfig_Global[realm]) then
+		XPerlConfig_Global[realm] = {}
+	end
+
+	return XPerlConfig_Global[realm], UnitName("player")
+end
+
 function XPerl_SetMyGlobal()
+	local slot, name = XPerl_GlobalSlot()
+
 	if (XPerlConfigSavePerCharacter) then
-		if (not XPerlConfig_Global) then
-			XPerlConfig_Global = {}
-		end
-
-		if (not XPerlConfig_Global[GetRealmName()]) then
-			XPerlConfig_Global[GetRealmName()] = {}
-		end
-
-		XPerlConfig_Global[GetRealmName()][UnitName("player")] = XPerlConfig
+		-- Einschalten: der Charakter bekommt eine EIGENE Kopie des Standes,
+		-- mit dem er gerade spielt. Vorher wurde die Tabelle selbst eingehaengt,
+		-- womit kontoweit und Charakter fuer immer dasselbe Objekt waren.
+		slot[name] = XPerl_DeepCopy(XPerlConfig)
+		XPerlConfig = slot[name]
 	else
-		if (XPerlConfig_Global[GetRealmName()][UnitName("player")]) then
-			XPerlConfig = XPerlConfig_Global[GetRealmName()][UnitName("player")]
-		end
+		-- Ausschalten: ab jetzt gilt wieder ein kontoweiter Stand. Einen alten
+		-- gibt es nicht mehr, der wurde beim Einschalten ueberschrieben - also
+		-- wird der aktuelle uebernommen, aber als losgeloeste Kopie.
+		XPerlConfig = XPerl_DeepCopy(XPerlConfig)
 	end
 
 	conf = XPerlConfig
@@ -319,7 +357,9 @@ function XPerl_ResetDefaults()
 	XPerl_Defaults()
 
 	if (XPerlConfigSavePerCharacter) then
-		XPerlConfig_Global[GetRealmName()][UnitName("player")] = XPerlConfig
+		-- [patch] war ungeprueft und ist auf einem frischen Account gestorben
+		local slot, name = XPerl_GlobalSlot()
+		slot[name] = XPerlConfig
 	end
 
 	conf.RaidPositions = rp
@@ -339,30 +379,21 @@ function XPerl_Globals_OnEvent(event)
 		this:UnregisterEvent(event)
 
 		if (XPerlConfigSavePerCharacter) then
-			local realm = GetRealmName()
-			local name = UnitName("player")
+			local slot, name = XPerl_GlobalSlot()
 
-			if (not XPerlConfig_Global) then
-				XPerlConfig_Global = {}
-			end
-
-			if (not XPerlConfig_Global[realm]) then
-				XPerlConfig_Global[realm] = {}
-			end
-
-			if (not XPerlConfig_Global[realm][name]) then
-				XPerlConfig_Global[realm][name] = {}
-
+			if (not slot[name]) then
+				-- [patch] Neuer Charakter erbt den kontoweiten Stand als KOPIE.
+				-- Vorher wurde die Tabelle selbst eingehaengt, wodurch jeder neue
+				-- Charakter dauerhaft an den kontoweiten Stand gekettet war - und
+				-- damit an jeden anderen Charakter, der genauso angelegt wurde.
 				if (XPerlConfig and XPerlConfig.BarTextures) then
-					XPerlConfig_Global[realm][name] = XPerlConfig
+					slot[name] = XPerl_DeepCopy(XPerlConfig)
+				else
+					slot[name] = {}
 				end
-			else
-				XPerlConfig = XPerlConfig_Global[realm][name]
 			end
 
-			if (not XPerlConfig) then
-				XPerlConfig = XPerlConfig_Global[realm][name]
-			end
+			XPerlConfig = slot[name]
 		else
 			if (not XPerlConfig) then
 				XPerlConfig = {}
@@ -459,3 +490,73 @@ function XPerl_Update_RaidIcon(unit, frame)
 		frame:Hide()
 	end
 end
+
+-- [patch] ---------------------------------------------------------------
+-- Rahmenpositionen. XPerl_SavePosition und XPerl_RestorePosition stehen in
+-- XPerl.lua, werden in dieser 1.12-Fassung aber von NIEMANDEM aufgerufen -
+-- in der WotLK-Fassung sind es sieben Aufrufe. Deshalb ist SavedPositions
+-- in der gespeicherten Konfiguration schlicht nicht vorhanden, und deshalb
+-- konnte das Uebernehmen eines Profils die Frames nie verschieben: die
+-- Positionen stecken gar nicht in der Konfiguration, sondern in
+-- WTF\...\layout-cache.txt, die der Client selbst pro Charakter fuehrt.
+--
+-- Hier werden sie nun tatsaechlich eingesammelt und lassen sich anwenden.
+XPerl_PositionFrames = {
+	"XPerl_Player", "XPerl_Player_Pet",
+	"XPerl_Target", "XPerl_TargetTarget", "XPerl_TargetTargetTarget",
+	"XPerl_party1", "XPerl_party2", "XPerl_party3", "XPerl_party4",
+	"XPerl_PartyPet1", "XPerl_PartyPet2", "XPerl_PartyPet3", "XPerl_PartyPet4",
+}
+
+function XPerl_CapturePositions()
+	if (not XPerlConfig) then
+		return
+	end
+	if (not XPerlConfig.SavedPositions) then
+		XPerlConfig.SavedPositions = {}
+	end
+
+	for i = 1, table.getn(XPerl_PositionFrames) do
+		local f = getglobal(XPerl_PositionFrames[i])
+		if (f and f:GetLeft()) then
+			XPerlConfig.SavedPositions[XPerl_PositionFrames[i]] = {
+				top = f:GetTop(), left = f:GetLeft(), scale = f:GetScale()
+			}
+		end
+	end
+end
+
+function XPerl_ApplyPositions()
+	if (not XPerlConfig or not XPerlConfig.SavedPositions) then
+		return
+	end
+
+	for name, pos in pairs(XPerlConfig.SavedPositions) do
+		local f = getglobal(name)
+		if (f and pos and pos.left and pos.top) then
+			local left, top = pos.left, pos.top
+
+			-- GetLeft/GetTop liefern Werte in der Skalierung des Frames.
+			-- Kommt das Profil von einem Charakter mit anderer Skalierung,
+			-- muss umgerechnet werden, sonst wandert der Rahmen.
+			local now = f:GetScale()
+			if (pos.scale and now and now > 0 and pos.scale ~= now) then
+				left = left * pos.scale / now
+				top  = top  * pos.scale / now
+			end
+
+			f:ClearAllPoints()
+			f:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", left, top)
+			if (f.SetUserPlaced) then
+				f:SetUserPlaced(true)
+			end
+		end
+	end
+end
+
+-- Einsammeln beim Ausloggen und beim Zonenwechsel. Ohne das haette das
+-- Profil eines anderen Charakters nichts, was es uebertragen koennte.
+local XPerlPosWatch = CreateFrame("Frame")
+XPerlPosWatch:RegisterEvent("PLAYER_LOGOUT")
+XPerlPosWatch:RegisterEvent("PLAYER_LEAVING_WORLD")
+XPerlPosWatch:SetScript("OnEvent", function() XPerl_CapturePositions() end)
