@@ -202,6 +202,7 @@ function XPerl_Defaults()
 	DefaultVar("ShowPlayerLevel",		1)
 	DefaultVar("ShowPlayerClassIcon",	1)
 	DefaultVar("ShowPlayerXPBar",		0)
+	DefaultVar("ShowDruidMana",		1)		-- [patch] druid mana bar in cat/bear form
 	DefaultVar("ShowPlayerPVPRank",		1)
 	DefaultVar("ShowPlayerPVP",		1)		-- 1.8.3
 	DefaultVar("ShowPlayerValues",		1)

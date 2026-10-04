@@ -10,6 +10,7 @@ Fork of **Redbu11dev/X-Perl-UnitFrames**.
 - Fixed Lua errors when toggling "save per character" or resetting on a fresh account.
 - Frame positions are saved and transferred when copying a profile.
 - New: HoT countdown on buff icons for your own Renew/Rejuvenation/Regrowth (needs SuperWoW).
+- New: druid mana bar in cat and bear form (needs SuperWoW or the DruidBar addon; toggle "Druid Mana" in the player options).
 
 Details: [CHANGELOG.md](CHANGELOG.md)
 

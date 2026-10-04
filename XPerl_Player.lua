@@ -108,6 +108,21 @@ local function XPerl_Player_UpdateName()
 	XPerl_Player_NameFrame_NameBarText:SetText(UnitName("player"))
 end
 
+-- [patch] XPerl_Player_SetStatsHeight
+-- The stats frame height follows the bars that are actually shown (XP/rep bar,
+-- druid mana bar). Before, every caller set a fixed 40/50/60 and the XP update
+-- (once per second) overwrote the extra row of the druid bar.
+local function XPerl_Player_SetStatsHeight()
+	local height = 40
+	if (XPerl_Player_StatsFrame_XPBar:IsShown()) then
+		height = height + 10
+	end
+	if (XPerl_Player_StatsFrame_DruidBar:IsShown()) then
+		height = height + 10
+	end
+	XPerl_Player_StatsFrame:SetHeight(height)
+end
+
 -- XPerl_Player_UpdateRep
 local function XPerl_Player_UpdateRep()
 	local name, reaction, min, max, value = GetWatchedFactionInfo()
@@ -156,13 +171,12 @@ local function XPerl_Player_UpdateRep()
 		hideXpBar = true
 		XPerl_Player_StatsFrame_XPBar:Hide()
 		XPerl_Player_StatsFrame_XPRestBar:Hide()
-		XPerl_Player_StatsFrame:SetHeight(40)
 	elseif (XPerlConfig.ShowPlayerXPBar == 1) then
 		hideXpBar = false
 		XPerl_Player_StatsFrame_XPBar:Show()
 		XPerl_Player_StatsFrame_XPRestBar:Show()
-		XPerl_Player_StatsFrame:SetHeight(50)
 	end
+	XPerl_Player_SetStatsHeight()		-- [patch]
 	XPerl_StatsFrameSetup(XPerl_Player_StatsFrame, {"DruidBar", "XPBar"})
 end
 
@@ -178,8 +192,8 @@ local function XPerl_Player_UpdateXP()
 	if (XPerlConfig.ShowPlayerXPBar == 1) then
 		XPerl_Player_StatsFrame_XPBar:Show()
 		XPerl_Player_StatsFrame_XPRestBar:Show()
-		XPerl_Player_StatsFrame:SetHeight(50)
 	end
+	XPerl_Player_SetStatsHeight()		-- [patch]
 	XPerl_StatsFrameSetup(XPerl_Player_StatsFrame, {"DruidBar", "XPBar"})
 
 	local playerxp = UnitXP("player")
@@ -321,36 +335,65 @@ local function XPerl_Player_CheckDeadOrGhost()
 	return false
 end
 
+-- [patch] XPerl_Player_GetDruidMana
+-- SuperWoW returns the druid's mana as second value of UnitMana/UnitManaMax
+-- while in cat or bear form. The DruidBar addon (DruidBarKey) stays as fallback.
+local function XPerl_Player_GetDruidMana()
+	if (SUPERWOW_VERSION) then
+		local _, mana = UnitMana("player")
+		local _, manaMax = UnitManaMax("player")
+		if (mana and manaMax and manaMax > 0) then
+			return mana, manaMax
+		end
+	end
+	if (DruidBarKey and DruidBarKey.maxmana and DruidBarKey.maxmana > 0) then
+		return math.floor(DruidBarKey.keepthemana), DruidBarKey.maxmana
+	end
+end
+
 -- XPerl_Player_DruidBarUpdate
+-- [patch] Shows the druid mana bar in cat/bear form when "ShowDruidMana" is on.
+-- Height and layout are only recalculated when the bar appears or disappears,
+-- not on every energy/rage tick.
 local function XPerl_Player_DruidBarUpdate()
-	XPerl_Player_StatsFrame_DruidBar:SetMinMaxValues(0,DruidBarKey.maxmana)
-	XPerl_Player_StatsFrame_DruidBar:SetValue(DruidBarKey.keepthemana)
-	manaPct = (DruidBarKey.keepthemana * 100.0) / DruidBarKey.maxmana
-	manaPct =  string.format("%3.0f", manaPct)
-	XPerl_Player_StatsFrame_DruidBarPercent:SetText(manaPct.."%")
-	XPerl_Player_StatsFrame_DruidBarText:SetText(math.floor(DruidBarKey.keepthemana).."/"..DruidBarKey.maxmana)
-	if (UnitPowerType("player")>0) then
-		if XPerlConfig.ShowPlayerXPBar==1 and (not hideXpBar) then
-			XPerl_Player_StatsFrame:SetHeight(60)
+	local bar = XPerl_Player_StatsFrame_DruidBar
+	local mana, manaMax
+	if (XPerlConfig.ShowDruidMana == 1 and UnitPowerType("player") > 0) then
+		mana, manaMax = XPerl_Player_GetDruidMana()
+	end
+
+	if (mana) then
+		bar:SetMinMaxValues(0, manaMax)
+		bar:SetValue(mana)
+		XPerl_Player_StatsFrame_DruidBarPercent:SetText(string.format("%3.0f", (mana * 100.0) / manaMax).."%")
+		XPerl_Player_StatsFrame_DruidBarText:SetText(mana.."/"..manaMax)
+
+		if (XPerlConfig.ShowPlayerValues == 1) then
+			XPerl_Player_StatsFrame_DruidBarText:Show()
 		else
-			XPerl_Player_StatsFrame:SetHeight(50)
+			XPerl_Player_StatsFrame_DruidBarText:Hide()
 		end
-		XPerl_Player_StatsFrame_DruidBarText:Show()
-		XPerl_Player_StatsFrame_DruidBarPercent:Show()
-		XPerl_Player_StatsFrame_DruidBar:Show()
-		XPerl_Player_StatsFrame_DruidBar:SetHeight(10)
-	else
-		if XPerlConfig.ShowPlayerXPBar == 1 and (not hideXpBar) then
-			XPerl_Player_StatsFrame:SetHeight(50)
+		if (XPerlConfig.ShowPlayerPercent == 1) then
+			XPerl_Player_StatsFrame_DruidBarPercent:Show()
 		else
-			XPerl_Player_StatsFrame:SetHeight(40)
+			XPerl_Player_StatsFrame_DruidBarPercent:Hide()
 		end
+
+		if (not bar:IsShown()) then
+			bar:Show()
+			bar:SetHeight(10)
+			XPerl_Player_SetStatsHeight()
+			XPerl_StatsFrameSetup(XPerl_Player_StatsFrame, {"DruidBar", "XPBar"})
+		end
+
+	elseif (bar:IsShown()) then
 		XPerl_Player_StatsFrame_DruidBarPercent:Hide()
 		XPerl_Player_StatsFrame_DruidBarText:Hide()
-		XPerl_Player_StatsFrame_DruidBar:Hide()
-		XPerl_Player_StatsFrame_DruidBar:SetHeight(1)
+		bar:Hide()
+		bar:SetHeight(1)
+		XPerl_Player_SetStatsHeight()
+		XPerl_StatsFrameSetup(XPerl_Player_StatsFrame, {"DruidBar", "XPBar"})
 	end
-	XPerl_StatsFrameSetup(XPerl_Player_StatsFrame, {"DruidBar", "XPBar"})
 end
 
 -- XPerl_Player_UpdateMana
@@ -375,11 +418,10 @@ local function XPerl_Player_UpdateMana()
 		XPerl_Player_StatsFrame_ManaBarText:Hide()
 	end
 
-	if (DruidBarKey) then
-		local _, engClass = UnitClass("player")
-		if (engClass == "DRUID") then
-			XPerl_Player_DruidBarUpdate()
-		end
+	-- [patch] Druid mana bar no longer requires the DruidBar addon (see XPerl_Player_GetDruidMana)
+	local _, engClass = UnitClass("player")
+	if (engClass == "DRUID") then
+		XPerl_Player_DruidBarUpdate()
 	end
 end
 
@@ -466,6 +508,10 @@ function XPerl_Player_OnUpdate()
 	if last >= 1 then
 		last = 0
 		XPerl_Player_UpdateXP()
+		-- [patch] Druid mana regenerates without an event while energy/rage stays the same
+		if (XPerl_Player_StatsFrame_DruidBar:IsShown()) then
+			XPerl_Player_DruidBarUpdate()
+		end
 	end
 end
 
@@ -700,12 +746,10 @@ function XPerl_Player_Events:PLAYER_AURAS_CHANGED()
 	XPerl_CheckDebuffs("player", XPerl_Player.FlashFrames)
 	XPerl_Player_TickerShowHide()
 
-	if (DruidBarKey) then
-		-- For DruidBar addon, we update the mana bar on shapeshift
-		local _, engClass = UnitClass("player")
-		if (engClass == "DRUID") then
-			XPerl_Player_UpdateMana()
-		end
+	-- [patch] Update the druid mana bar on shapeshift (SuperWoW or DruidBar addon)
+	local _, engClass = UnitClass("player")
+	if (engClass == "DRUID") then
+		XPerl_Player_UpdateMana()
 	end
 
 	if (UIParent.isOutOfControl and not UnitOnTaxi("player")) then
@@ -935,12 +979,11 @@ function XPerl_Player_Set_Bits()
 	if (XPerlConfig.ShowPlayerXPBar==0) then
 		XPerl_Player_StatsFrame_XPBar:Hide()
 		XPerl_Player_StatsFrame_XPRestBar:Hide()
-		XPerl_Player_StatsFrame:SetHeight(40)
 	else
 		XPerl_Player_StatsFrame_XPBar:Show()
 		XPerl_Player_StatsFrame_XPRestBar:Show()
-		XPerl_Player_StatsFrame:SetHeight(50)
 	end
+	XPerl_Player_SetStatsHeight()		-- [patch]
 
 	XPerl_Player:SetWidth(XPerlConfig.ShowPlayerPortrait * 60 + 158)
 end

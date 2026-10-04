@@ -14,8 +14,19 @@ Upstream commits `933e015` ("??" level display for bosses) and `11a4237` (rested
 
 Version scheme: `<upstream version>-octo.<n>`. Each release is a git tag `v<version>`; older versions can be downloaded from the tag page on GitHub.
 
+### 1.9.6.1-octo.2 – 2026-10-04
+- New: druid mana bar in cat and bear form (see below). Needs XPerl_Options 1.9.6.1-octo.2 for the checkbox.
+
 ### 1.9.6.1-octo.1 – 2026-10-03
 - First tagged release with the changes listed below.
+
+## Druid mana in cat and bear form
+
+- `XPerl/XPerl_Player.lua`: the player frame already had a druid mana bar, but it was only filled by the separate DruidBar addon (`DruidBarKey`). It now reads the mana from SuperWoW (second return value of `UnitMana`/`UnitManaMax` while shapeshifted); DruidBar stays as fallback.
+- The bar updates on energy/rage/mana events, on shapeshift and once per second (mana regenerates without an event while energy is full).
+- Its text and percentage follow the "Values" and "Percent" player options.
+- New option `ShowDruidMana` (default on, `XPerl/XPerl_Globals.lua`), checkbox "Druid Mana" in the player options.
+- Fix: the stats frame height is now calculated from the bars actually shown (`XPerl_Player_SetStatsHeight`). Before, the XP/reputation update (once per second) reset the height and cut off the extra row.
 
 ## HoT countdown on buff icons
 
