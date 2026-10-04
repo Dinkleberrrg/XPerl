@@ -1,31 +1,31 @@
--- [patch] Restdauer der eigenen HoTs (Renew, Rejuvenation, Regrowth) als
--- Countdown auf den Buff-Icons der Party-, Raid-, Target- und ToT-Frames.
--- 1.12 kennt keine Buff-Restdauer fuer fremde Einheiten, deshalb wird ueber
--- SuperWoW (UNIT_CASTEVENT) mitgeschrieben, wann wir welchen HoT auf wen
--- gezaubert haben. Ohne SuperWoW bleibt das Modul still.
+-- [patch] Remaining time of your own HoTs (Renew, Rejuvenation, Regrowth) as
+-- a countdown on the buff icons of the party, raid, target and ToT frames.
+-- 1.12 has no buff duration for other units, so SuperWoW (UNIT_CASTEVENT)
+-- is used to record when we cast which HoT on whom. Without SuperWoW the
+-- module stays silent.
 --
--- Die Dauer lernt sich selbst: Sobald ein HoT auf uns selbst landet, wird die
--- echte Restzeit per GetPlayerBuffTimeLeft gemessen und pro Charakter in
--- XPerl_HoTDurations gespeichert. Talente oder Set-Boni, die die Dauer
--- verlaengern, sind damit nach einem Selbst-Cast automatisch drin.
+-- The duration learns itself: as soon as a HoT lands on ourselves, the real
+-- remaining time is measured with GetPlayerBuffTimeLeft and stored per
+-- character in XPerl_HoTDurations. Talents or set bonuses that extend the
+-- duration are thus included automatically after one self-cast.
 
--- Grunddauer ohne Talente, Schluessel = Icon-Dateiname in Kleinbuchstaben
+-- base duration without talents, key = icon file name in lower case
 local defaultDurations = {
 	spell_holy_renew		= 15,	-- Renew
 	spell_nature_rejuvenation	= 12,	-- Rejuvenation
-	spell_nature_resistnature	= 21,	-- Regrowth (HoT-Anteil)
+	spell_nature_resistnature	= 21,	-- Regrowth (HoT part)
 }
 
--- Fallback, falls SpellInfo kein Icon liefert
+-- fallback in case SpellInfo returns no icon
 local nameToKey = {
 	["Renew"]		= "spell_holy_renew",
 	["Rejuvenation"]	= "spell_nature_rejuvenation",
 	["Regrowth"]		= "spell_nature_resistnature",
 }
 
-local timers = {}		-- timers[guid][key] = Ablaufzeitpunkt (GetTime)
-local pendingLearn = {}		-- pendingLearn[key] = Zeitpunkt des Selbst-Casts
-local textShown = {}		-- Buttons, auf denen gerade ein Countdown steht
+local timers = {}		-- timers[guid][key] = expiry time (GetTime)
+local pendingLearn = {}		-- pendingLearn[key] = time of the self-cast
+local textShown = {}		-- buttons currently showing a countdown
 local playerGUID
 
 local function TexKey(tex)
@@ -69,7 +69,7 @@ local function SpellKey(spellID)
 	return name and nameToKey[name]
 end
 
--- Selbst-Cast vermessen: Restzeit + seit dem Cast vergangene Zeit = volle Dauer
+-- measure a self-cast: remaining time + time since the cast = full duration
 local function LearnFromPlayerBuffs()
 	if (not next(pendingLearn)) then
 		return
@@ -85,8 +85,8 @@ local function LearnFromPlayerBuffs()
 		if (castTime) then
 			local left = GetPlayerBuffTimeLeft(bid)
 			local dur = left and floor(left + (now - castTime) + 0.5)
-			-- Talente verlaengern nur; ein kuerzerer Wert waere ein noch nicht
-			-- aufgefrischter alter HoT
+			-- talents only extend; a shorter value would be an old HoT that
+			-- has not been refreshed yet
 			if (dur and dur >= defaultDurations[key] and now - castTime < 2) then
 				pendingLearn[key] = nil
 				XPerl_HoTDurations = XPerl_HoTDurations or {}
@@ -97,7 +97,7 @@ local function LearnFromPlayerBuffs()
 			end
 		end
 	end
-	-- Was nicht innerhalb von 2s auftaucht (z.B. Cast verfehlt), verwerfen
+	-- discard anything that does not show up within 2s (e.g. cast missed)
 	for key, t in pairs(pendingLearn) do
 		if (now - t >= 2) then
 			pendingLearn[key] = nil
@@ -163,7 +163,7 @@ local function SetButtonText(button, left)
 	textShown[button] = true
 end
 
--- Frames mit Buff-Leiste: Name -> Einheit (nil = aus frame.partyid/unitid)
+-- frames with a buff row: name -> unit (nil = from frame.partyid/unitid)
 local frameList = {
 	{"XPerl_Target", "target"},
 	{"XPerl_TargetTarget"},
@@ -216,7 +216,7 @@ local function OnUpdate()
 	LearnFromPlayerBuffs()
 	local now = GetTime()
 
-	-- Abgelaufene Timer aufraeumen
+	-- clean up expired timers
 	for guid, list in pairs(timers) do
 		for key, expire in pairs(list) do
 			if (expire <= now) then
@@ -235,7 +235,7 @@ local function OnUpdate()
 		end
 	end
 
-	-- Buttons werden fuer andere Buffs wiederverwendet: alte Zahlen weg
+	-- buttons are reused for other buffs: remove old numbers
 	for button in pairs(textShown) do
 		if (not seen[button]) then
 			button.perlHoTText:Hide()
@@ -249,7 +249,7 @@ frame:RegisterEvent("PLAYER_ENTERING_WORLD")
 frame:SetScript("OnEvent", function()
 	if (event == "PLAYER_ENTERING_WORLD") then
 		playerGUID = UnitGUID("player")
-		-- SuperWoW-Erkennung: ohne SpellInfo/GUIDs kein Tracking moeglich
+		-- SuperWoW detection: no tracking possible without SpellInfo/GUIDs
 		if (SpellInfo and playerGUID and not this.perlActive) then
 			this.perlActive = true
 			this:RegisterEvent("UNIT_CASTEVENT")

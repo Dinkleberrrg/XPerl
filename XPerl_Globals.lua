@@ -38,10 +38,10 @@ function XPerl_Notice(str)
 	end
 end
 
--- [patch] Tiefe Kopie. XPerl hat Konfigurationstabellen ueberall per Referenz
--- weitergereicht. Dadurch teilten sich Charaktere und der kontoweite Stand
--- dieselben Farb-, Rand- und Raidtabellen: eine Aenderung an einem Charakter
--- schlug still auf alle anderen durch.
+-- [patch] Deep copy. XPerl passed configuration tables around by reference
+-- everywhere. Characters and the account-wide settings therefore shared the
+-- same colour, border and raid tables: a change on one character silently
+-- affected all others.
 function XPerl_DeepCopy(src)
 	if (type(src) ~= "table") then
 		return src
@@ -58,12 +58,12 @@ function XPerl_DeepCopy(src)
 	return dst
 end
 
--- [patch] Ablageort im kontoweiten Speicher, angelegt falls noetig.
--- Der else-Zweig von XPerl_SetMyGlobal ist frueher ungeprueft in
--- XPerlConfig_Global[realm][name] gelaufen und mit
--- "attempt to index field '?' (a nil value)" gestorben, sobald man den
--- Schalter "pro Charakter speichern" ausgeschaltet hat, bevor je ein
--- Eintrag dafuer angelegt worden war.
+-- [patch] Slot in the account-wide storage, created if needed.
+-- The else branch of XPerl_SetMyGlobal used to index
+-- XPerlConfig_Global[realm][name] unchecked and died with
+-- "attempt to index field '?' (a nil value)" as soon as the
+-- "save per character" switch was turned off before an entry
+-- had ever been created for it.
 function XPerl_GlobalSlot()
 	if (not XPerlConfig_Global) then
 		XPerlConfig_Global = {}
@@ -81,15 +81,15 @@ function XPerl_SetMyGlobal()
 	local slot, name = XPerl_GlobalSlot()
 
 	if (XPerlConfigSavePerCharacter) then
-		-- Einschalten: der Charakter bekommt eine EIGENE Kopie des Standes,
-		-- mit dem er gerade spielt. Vorher wurde die Tabelle selbst eingehaengt,
-		-- womit kontoweit und Charakter fuer immer dasselbe Objekt waren.
+		-- Turning on: the character gets its OWN copy of the settings it is
+		-- currently playing with. Before, the table itself was linked in, so
+		-- account-wide and character were the same object forever.
 		slot[name] = XPerl_DeepCopy(XPerlConfig)
 		XPerlConfig = slot[name]
 	else
-		-- Ausschalten: ab jetzt gilt wieder ein kontoweiter Stand. Einen alten
-		-- gibt es nicht mehr, der wurde beim Einschalten ueberschrieben - also
-		-- wird der aktuelle uebernommen, aber als losgeloeste Kopie.
+		-- Turning off: account-wide settings apply again from now on. There is
+		-- no old one any more, it was overwritten when turning on - so the
+		-- current one is taken over, but as a detached copy.
 		XPerlConfig = XPerl_DeepCopy(XPerlConfig)
 	end
 
@@ -358,7 +358,7 @@ function XPerl_ResetDefaults()
 	XPerl_Defaults()
 
 	if (XPerlConfigSavePerCharacter) then
-		-- [patch] war ungeprueft und ist auf einem frischen Account gestorben
+		-- [patch] was unchecked and died on a fresh account
 		local slot, name = XPerl_GlobalSlot()
 		slot[name] = XPerlConfig
 	end
@@ -383,10 +383,10 @@ function XPerl_Globals_OnEvent(event)
 			local slot, name = XPerl_GlobalSlot()
 
 			if (not slot[name]) then
-				-- [patch] Neuer Charakter erbt den kontoweiten Stand als KOPIE.
-				-- Vorher wurde die Tabelle selbst eingehaengt, wodurch jeder neue
-				-- Charakter dauerhaft an den kontoweiten Stand gekettet war - und
-				-- damit an jeden anderen Charakter, der genauso angelegt wurde.
+				-- [patch] A new character inherits the account-wide settings as a COPY.
+				-- Before, the table itself was linked in, chaining every new
+				-- character permanently to the account-wide settings - and thus
+				-- to every other character created the same way.
 				if (XPerlConfig and XPerlConfig.BarTextures) then
 					slot[name] = XPerl_DeepCopy(XPerlConfig)
 				else
@@ -493,15 +493,14 @@ function XPerl_Update_RaidIcon(unit, frame)
 end
 
 -- [patch] ---------------------------------------------------------------
--- Rahmenpositionen. XPerl_SavePosition und XPerl_RestorePosition stehen in
--- XPerl.lua, werden in dieser 1.12-Fassung aber von NIEMANDEM aufgerufen -
--- in der WotLK-Fassung sind es sieben Aufrufe. Deshalb ist SavedPositions
--- in der gespeicherten Konfiguration schlicht nicht vorhanden, und deshalb
--- konnte das Uebernehmen eines Profils die Frames nie verschieben: die
--- Positionen stecken gar nicht in der Konfiguration, sondern in
--- WTF\...\layout-cache.txt, die der Client selbst pro Charakter fuehrt.
+-- Frame positions. XPerl_SavePosition and XPerl_RestorePosition exist in
+-- XPerl.lua, but NOBODY calls them in this 1.12 version - the WotLK
+-- version has seven calls. That is why SavedPositions simply does not exist
+-- in the saved configuration, and why copying a profile could never move
+-- the frames: the positions are not in the configuration at all but in
+-- WTF\...\layout-cache.txt, which the client keeps per character itself.
 --
--- Hier werden sie nun tatsaechlich eingesammelt und lassen sich anwenden.
+-- Here they are actually collected and can be applied.
 XPerl_PositionFrames = {
 	"XPerl_Player", "XPerl_Player_Pet",
 	"XPerl_Target", "XPerl_TargetTarget", "XPerl_TargetTargetTarget",
@@ -537,9 +536,9 @@ function XPerl_ApplyPositions()
 		if (f and pos and pos.left and pos.top) then
 			local left, top = pos.left, pos.top
 
-			-- GetLeft/GetTop liefern Werte in der Skalierung des Frames.
-			-- Kommt das Profil von einem Charakter mit anderer Skalierung,
-			-- muss umgerechnet werden, sonst wandert der Rahmen.
+			-- GetLeft/GetTop return values in the frame's scale.
+			-- If the profile comes from a character with a different scale,
+			-- it has to be converted, otherwise the frame drifts.
 			local now = f:GetScale()
 			if (pos.scale and now and now > 0 and pos.scale ~= now) then
 				left = left * pos.scale / now
@@ -555,8 +554,8 @@ function XPerl_ApplyPositions()
 	end
 end
 
--- Einsammeln beim Ausloggen und beim Zonenwechsel. Ohne das haette das
--- Profil eines anderen Charakters nichts, was es uebertragen koennte.
+-- Collect on logout and on zoning. Without this, another character's
+-- profile would have nothing it could transfer.
 local XPerlPosWatch = CreateFrame("Frame")
 XPerlPosWatch:RegisterEvent("PLAYER_LOGOUT")
 XPerlPosWatch:RegisterEvent("PLAYER_LEAVING_WORLD")

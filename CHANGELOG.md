@@ -14,6 +14,9 @@ Upstream commits `933e015` ("??" level display for bosses) and `11a4237` (rested
 
 Version scheme: `<upstream version>-octo.<n>`. Each release is a git tag `v<version>`; older versions can be downloaded from the tag page on GitHub.
 
+### 1.9.6.1-octo.3 – 2026-10-04
+- Code comments of the changes (incl. HoT countdown) translated to English. No functional change.
+
 ### 1.9.6.1-octo.2 – 2026-10-04
 - New: druid mana bar in cat and bear form (see below). Needs XPerl_Options 1.9.6.1-octo.2 for the checkbox.
 
